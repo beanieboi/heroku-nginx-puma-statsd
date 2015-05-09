@@ -50,13 +50,33 @@ http {
       proxy_pass http://app_server;
     }
 
+    location ~* ^/documentation/(.*) {
+      set $s3_bucket        'my_bucket.s3-website-us-east-1.amazonaws.com';
+      set $url_full         '$1';
+      resolver              8.8.8.8 valid=300s;
+      resolver_timeout      10s;
+
+      index index.html;
+
+      proxy_hide_header       x-amz-id-2;
+      proxy_hide_header       x-amz-request-id;
+      proxy_hide_header       Set-Cookie;
+      proxy_set_header        X-Real-IP $remote_addr;
+      proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header        Host $s3_bucket;
+      proxy_ignore_headers    "Set-Cookie";
+      proxy_buffering         off;
+      proxy_intercept_errors  on;
+      proxy_redirect          off;
+      proxy_pass              http://$s3_bucket/$url_full;
+    }
+
     location ~* \.(eot|oft|svg|ttf|woff)$ {
       add_header Access-Control-Allow-Origin *;
       expires max;
       log_not_found off;
       access_log off;
       add_header Cache-Control public;
-      fastcgi_hide_header Set-Cookie;
     }
 
     location ~* ^/assets/ {
