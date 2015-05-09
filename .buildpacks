@@ -1,0 +1,4 @@
+https://github.com/dpiddy/heroku-buildpack-runit.git
+https://github.com/beanieboi/nginx-buildpack.git
+https://github.com/heroku/heroku-buildpack-nodejs.git
+https://github.com/heroku/heroku-buildpack-ruby.git
