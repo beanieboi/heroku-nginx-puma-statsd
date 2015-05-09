@@ -8,5 +8,5 @@ bind        "unix:///tmp/nginx.socket"
 environment ENV['RACK_ENV'] || 'development'
 
 on_worker_fork do
-    FileUtils.touch('/tmp/app-initialized')
+  FileUtils.touch('/tmp/app-initialized')
 end

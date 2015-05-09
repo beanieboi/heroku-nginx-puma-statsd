@@ -10,8 +10,13 @@ events {
 
 http {
   gzip on;
-  gzip_comp_level 2;
-  gzip_min_length 512;
+  gzip_comp_level 3;
+  gzip_min_length 150;
+  gzip_proxied any;
+  gzip_types text/plain text/css text/json text/javascript
+    application/javascript application/x-javascript application/json
+    application/rss+xml application/vnd.ms-fontobject application/x-font-ttf
+    application/xml font/opentype image/svg+xml text/xml;
 
   server_tokens off;
 
@@ -35,11 +40,38 @@ http {
     server_name _;
     keepalive_timeout 5;
 
+    root /app/public; # path to your app
+
     location / {
+      proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header Host $http_host;
       proxy_redirect off;
       proxy_pass http://app_server;
+    }
+
+    location ~* \.(eot|oft|svg|ttf|woff)$ {
+      add_header Access-Control-Allow-Origin *;
+      expires max;
+      log_not_found off;
+      access_log off;
+      add_header Cache-Control public;
+      fastcgi_hide_header Set-Cookie;
+    }
+
+    location ~* ^/assets/ {
+      gzip_static on;
+
+      # Per RFC2616 - 1 year maximum expiry
+      expires 1y;
+      add_header Cache-Control public;
+
+      # Some browsers still send conditional-GET requests if there's a
+      # Last-Modified header or an ETag header even if they haven't
+      # reached the expiry date sent in the Expires header.
+      add_header Last-Modified "";
+      add_header ETag "";
+      break;
     }
   }
 }
